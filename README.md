@@ -207,9 +207,11 @@ This keeps the feature:
 
 ## Real provider keys and fallback behavior
 
-Normal chat requests still use LibreChat's existing provider configuration.
+Normal chat requests still use LibreChat's existing provider configuration. This feature does not add a new provider setup mechanism and does not change how LibreChat resolves API keys.
 
-For example, if `OPENAI_API_KEY` is present in `.env`, LibreChat may use it server-side even when the user does not manually paste a key in the UI. In that case:
+In upstream LibreChat, OpenAI can be configured server-side with `OPENAI_API_KEY` from the environment. LibreChat also supports user-provided key mode with `OPENAI_API_KEY=user_provided`, where the user supplies the key through the normal UI flow.
+
+For example, if a real `OPENAI_API_KEY` is present in `.env`, LibreChat may use it server-side even when the user does not manually paste a key in the UI. In that case:
 
 - a successful provider response is recorded as a real interaction;
 - `429 quota exceeded` means the provider key was found, but the account/project has no available quota;
