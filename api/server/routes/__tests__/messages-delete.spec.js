@@ -11,6 +11,7 @@ jest.mock('@librechat/agents', () => ({
 jest.mock('@librechat/api', () => ({
   unescapeLaTeX: jest.fn((x) => x),
   countTokens: jest.fn().mockResolvedValue(10),
+  recordInteractionExchange: jest.fn(),
 }));
 
 jest.mock('@librechat/data-schemas', () => ({
@@ -37,6 +38,7 @@ jest.mock('~/models', () => ({
   getConvosQueried: jest.fn(),
   searchMessages: jest.fn(),
   getMessagesByCursor: jest.fn(),
+  createInteraction: jest.fn(),
 }));
 
 jest.mock('~/server/services/Artifacts/update', () => ({
@@ -195,5 +197,172 @@ describe('DELETE /:conversationId/:messageId – route handler', () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: 'Internal server error' });
+  });
+});
+
+describe('POST /:conversationId - interaction recording', () => {
+  let app;
+  const { saveMessage, saveConvo, getMessage, createInteraction } = require('~/models');
+  const { recordInteractionExchange } = require('@librechat/api');
+  const authenticatedUserId = 'user-owner-123';
+
+  beforeAll(() => {
+    const messagesRouter = require('../messages');
+
+    app = express();
+    app.use(express.json());
+    app.use((req, res, next) => {
+      req.user = { id: authenticatedUserId };
+      req.config = {};
+      next();
+    });
+    app.use('/api/messages', messagesRouter);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    saveConvo.mockResolvedValue({});
+    createInteraction.mockResolvedValue({});
+    recordInteractionExchange.mockResolvedValue({});
+  });
+
+  it('records an interaction when an assistant message with a parent user message is saved', async () => {
+    saveMessage.mockResolvedValue({
+      messageId: 'assistant-msg-1',
+      conversationId: 'convo-1',
+      parentMessageId: 'user-msg-1',
+      text: 'Assistant reply',
+      isCreatedByUser: false,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+    getMessage.mockResolvedValue({
+      messageId: 'user-msg-1',
+      text: 'User prompt',
+    });
+
+    const response = await request(app).post('/api/messages/convo-1').send({
+      messageId: 'assistant-msg-1',
+      parentMessageId: 'user-msg-1',
+      text: 'Assistant reply',
+      isCreatedByUser: false,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+
+    expect(response.status).toBe(201);
+    expect(getMessage).toHaveBeenCalledWith({
+      user: authenticatedUserId,
+      messageId: 'user-msg-1',
+    });
+    expect(recordInteractionExchange).toHaveBeenCalledWith(
+      { createInteraction },
+      expect.objectContaining({
+        user: authenticatedUserId,
+        userMessageId: 'user-msg-1',
+        assistantMessageId: 'assistant-msg-1',
+        userMessage: 'User prompt',
+        assistantMessage: 'Assistant reply',
+        model: 'gpt-4o',
+        endpoint: 'openAI',
+        conversationId: 'convo-1',
+        metadata: expect.objectContaining({
+          mocked: false,
+          source: 'messages-route',
+        }),
+      }),
+    );
+  });
+
+  it('does not record an interaction for a user-authored message', async () => {
+    saveMessage.mockResolvedValue({
+      messageId: 'user-msg-2',
+      conversationId: 'convo-2',
+      text: 'User prompt',
+      isCreatedByUser: true,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+
+    const response = await request(app).post('/api/messages/convo-2').send({
+      messageId: 'user-msg-2',
+      text: 'User prompt',
+      isCreatedByUser: true,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+
+    expect(response.status).toBe(201);
+    expect(getMessage).not.toHaveBeenCalled();
+    expect(recordInteractionExchange).not.toHaveBeenCalled();
+  });
+
+  it('records text from content parts when saved messages do not have text', async () => {
+    saveMessage.mockResolvedValue({
+      messageId: 'assistant-msg-content',
+      conversationId: 'convo-content',
+      parentMessageId: 'user-msg-content',
+      content: [{ type: 'text', text: 'Assistant content reply' }],
+      isCreatedByUser: false,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+    getMessage.mockResolvedValue({
+      messageId: 'user-msg-content',
+      content: [{ type: 'text', text: 'User content prompt' }],
+    });
+
+    const response = await request(app)
+      .post('/api/messages/convo-content')
+      .send({
+        messageId: 'assistant-msg-content',
+        parentMessageId: 'user-msg-content',
+        content: [{ type: 'text', text: 'Assistant content reply' }],
+        isCreatedByUser: false,
+        model: 'gpt-4o',
+        endpoint: 'openAI',
+      });
+
+    expect(response.status).toBe(201);
+    expect(recordInteractionExchange).toHaveBeenCalledWith(
+      { createInteraction },
+      expect.objectContaining({
+        userMessage: 'User content prompt',
+        assistantMessage: 'Assistant content reply',
+      }),
+    );
+  });
+
+  it('does not fail message saving when interaction recording throws', async () => {
+    saveMessage.mockResolvedValue({
+      messageId: 'assistant-msg-2',
+      conversationId: 'convo-3',
+      parentMessageId: 'user-msg-3',
+      text: 'Assistant reply',
+      isCreatedByUser: false,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+    getMessage.mockResolvedValue({
+      messageId: 'user-msg-3',
+      text: 'User prompt',
+    });
+    recordInteractionExchange.mockRejectedValue(new Error('analytics unavailable'));
+
+    const response = await request(app).post('/api/messages/convo-3').send({
+      messageId: 'assistant-msg-2',
+      parentMessageId: 'user-msg-3',
+      text: 'Assistant reply',
+      isCreatedByUser: false,
+      model: 'gpt-4o',
+      endpoint: 'openAI',
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        messageId: 'assistant-msg-2',
+      }),
+    );
   });
 });

@@ -4,6 +4,7 @@ import { createSessionModel } from './session';
 import { createBalanceModel } from './balance';
 import { createConversationModel } from './convo';
 import { createMessageModel } from './message';
+import { createInteractionModel } from './interaction';
 import { createAgentModel } from './agent';
 import { createAgentApiKeyModel } from './agentApiKey';
 import { createAgentCategoryModel } from './agentCategory';
@@ -42,6 +43,7 @@ export function createModels(mongoose: typeof import('mongoose')) {
     Balance: createBalanceModel(mongoose),
     Conversation: createConversationModel(mongoose),
     Message: createMessageModel(mongoose),
+    Interaction: createInteractionModel(mongoose),
     Agent: createAgentModel(mongoose),
     AgentApiKey: createAgentApiKeyModel(mongoose),
     AgentCategory: createAgentCategoryModel(mongoose),

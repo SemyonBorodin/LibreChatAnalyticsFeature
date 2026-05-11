@@ -34,6 +34,7 @@ import CollapseChat from './CollapseChat';
 import StreamAudio from './StreamAudio';
 import StopButton from './StopButton';
 import SendButton from './SendButton';
+import AnalyticsButton from '../AnalyticsButton';
 import EditBadges from './EditBadges';
 import BadgeRow from './BadgeRow';
 import Mention from './Mention';
@@ -352,6 +353,9 @@ const ChatForm = memo(function ChatForm({
                   setFiles={setFiles}
                   setFilesLoading={setFilesLoading}
                 />
+              </div>
+              <div className={cn('flex items-center', isRTL ? 'mr-1' : 'ml-1')}>
+                <AnalyticsButton className="size-9 p-1" />
               </div>
               <BadgeRow
                 showEphemeralBadges={

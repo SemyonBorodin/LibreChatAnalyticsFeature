@@ -31,6 +31,7 @@ import { createPresetMethods, type PresetMethods } from './preset';
 /* Tier 2 — Moderate (service deps injected) */
 import { createConversationTagMethods, type ConversationTagMethods } from './conversationTag';
 import { createMessageMethods, type MessageMethods } from './message';
+import { createInteractionMethods, type InteractionMethods } from './interaction';
 import { createConversationMethods, type ConversationMethods } from './conversation';
 /* Tier 3 — Complex (heavier injection) */
 import {
@@ -91,6 +92,7 @@ export type AllMethods = UserMethods &
   PresetMethods &
   ConversationTagMethods &
   MessageMethods &
+  InteractionMethods &
   ConversationMethods &
   TxMethods &
   TransactionMethods &
@@ -217,6 +219,7 @@ export function createMethods(
     /* Tier 2 */
     ...createConversationTagMethods(mongoose),
     ...messageMethods,
+    ...createInteractionMethods(mongoose),
     ...conversationMethods,
     /* Tier 3 */
     ...txMethods,
@@ -256,6 +259,7 @@ export type {
   PresetMethods,
   ConversationTagMethods,
   MessageMethods,
+  InteractionMethods,
   ConversationMethods,
   TxMethods,
   TransactionMethods,

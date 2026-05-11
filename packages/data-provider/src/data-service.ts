@@ -1154,6 +1154,22 @@ export function getBanner(): Promise<t.TBannerResponse> {
   return request.get(endpoints.banner());
 }
 
+export function getInteractionAnalyticsSummary(): Promise<q.TInteractionAnalyticsSummary> {
+  return request.get(endpoints.interactionAnalyticsSummary());
+}
+
+export function getInteractionLogs(
+  params: q.InteractionAnalyticsListParams = {},
+): Promise<q.TInteractionLogsResponse> {
+  return request.get(endpoints.interactionAnalyticsInteractions(params));
+}
+
+export function createMockInteraction(
+  payload: q.TCreateMockInteractionRequest,
+): Promise<q.TCreateMockInteractionResponse> {
+  return request.post(endpoints.interactionAnalyticsMockInteraction(), payload);
+}
+
 export function updateFeedback(
   conversationId: string,
   messageId: string,

@@ -4,6 +4,7 @@ const { logger } = require('@librechat/data-schemas');
 const { ContentTypes } = require('librechat-data-provider');
 const { unescapeLaTeX, countTokens } = require('@librechat/api');
 const { findAllArtifacts, replaceArtifactContent } = require('~/server/services/Artifacts/update');
+const { recordSavedInteraction } = require('~/server/services/Analytics/recordSavedInteraction');
 const { requireJwtAuth, validateMessageReq } = require('~/server/middleware');
 const db = require('~/models');
 
@@ -294,6 +295,14 @@ router.post('/:conversationId', validateMessageReq, async (req, res) => {
       return res.status(400).json({ error: 'Message not saved' });
     }
     await db.saveConvo(reqCtx, savedMessage, { context: 'POST /api/messages/:conversationId' });
+    await recordSavedInteraction({
+      userId: req.user.id,
+      savedMessage,
+      fallbackMessage: message,
+      conversationId: req.params.conversationId,
+      source: 'messages-route',
+    });
+
     res.status(201).json(savedMessage);
   } catch (error) {
     logger.error('Error saving message:', error);

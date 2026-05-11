@@ -54,6 +54,12 @@ export default [
     input: 'src/react-query/index.ts',
     output: [
       {
+        file: 'dist/react-query/index.js',
+        format: 'cjs',
+        exports: 'named',
+        sourcemap: true,
+      },
+      {
         file: 'dist/react-query/index.es.js',
         format: 'esm',
         exports: 'named',

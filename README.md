@@ -1,225 +1,317 @@
-<p align="center">
-  <a href="https://librechat.ai">
-    <img src="client/public/assets/logo.svg" height="256">
-  </a>
-  <h1 align="center">
-    <a href="https://librechat.ai">LibreChat</a>
-  </h1>
-</p>
+# LibreChat Interaction Analytics
 
-<p align="center">
-  <strong>English</strong> ·
-  <a href="README.zh.md">中文</a>
-</p>
+Fork of [LibreChat](https://github.com/danny-avila/LibreChat) with an added interaction analytics feature.
 
-<p align="center">
-  <a href="https://discord.librechat.ai"> 
-    <img
-      src="https://img.shields.io/discord/1086345563026489514?label=&logo=discord&style=for-the-badge&logoWidth=20&logoColor=white&labelColor=000000&color=blueviolet">
-  </a>
-  <a href="https://www.youtube.com/@LibreChat"> 
-    <img
-      src="https://img.shields.io/badge/YOUTUBE-red.svg?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000&logoWidth=20">
-  </a>
-  <a href="https://docs.librechat.ai"> 
-    <img
-      src="https://img.shields.io/badge/DOCS-blue.svg?style=for-the-badge&logo=read-the-docs&logoColor=white&labelColor=000000&logoWidth=20">
-  </a>
-  <a aria-label="Sponsors" href="https://github.com/sponsors/danny-avila">
-    <img
-      src="https://img.shields.io/badge/SPONSORS-brightgreen.svg?style=for-the-badge&logo=github-sponsors&logoColor=white&labelColor=000000&logoWidth=20">
-  </a>
-</p>
+## Scope
 
-<p align="center">
-<a href="https://railway.com/deploy/librechat-official?referralCode=HI9hWz&utm_medium=integration&utm_source=readme&utm_campaign=librechat">
-  <img src="https://railway.com/button.svg" alt="Deploy on Railway" height="30">
-</a>
-<a href="https://zeabur.com/templates/0X2ZY8">
-  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="30"/>
-</a>
-<a href="https://template.cloud.sealos.io/deploy?templateName=librechat">
-  <img src="https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg" alt="Deploy on Sealos" height="30">
-</a>
-</p>
+Implemented feature:
 
-<p align="center">
-  <a href="https://www.librechat.ai/docs/translation">
-    <img 
-      src="https://img.shields.io/badge/dynamic/json.svg?style=for-the-badge&color=2096F3&label=locize&query=%24.translatedPercentage&url=https://api.locize.app/badgedata/4cb2598b-ed4d-469c-9b04-2ed531a8cb45&suffix=%+translated" 
-      alt="Translation Progress">
-  </a>
-</p>
+- recording user/AI interactions from the existing chat flow
+- separate deterministic mock interaction endpoint for local development and feature demonstration
+- analytics API for summary and recent interaction logs
+- `/analytics` page with summary cards, day chart, and recent interactions table
+- React Query integration through the existing data-provider layer
 
+This repository is intended as a technical feature fork, not as a replacement for the upstream LibreChat project documentation.
 
-# ✨ Features
+## Screenshots
 
-- 🖥️ **UI & Experience** inspired by ChatGPT with enhanced design and features
+### Chat flow with recorded mock AI response
 
-- 🤖 **AI Model Selection**:  
-  - Anthropic (Claude), AWS Bedrock, OpenAI, Azure OpenAI, Google, Vertex AI, OpenAI Responses API (incl. Azure)
-  - [Custom Endpoints](https://www.librechat.ai/docs/quick_start/custom_endpoints): Use any OpenAI-compatible API with LibreChat, no proxy required
-  - Compatible with [Local & Remote AI Providers](https://www.librechat.ai/docs/configuration/librechat_yaml/ai_endpoints):
-    - Ollama, groq, Cohere, Mistral AI, Apple MLX, koboldcpp, together.ai,
-    - OpenRouter, Helicone, Perplexity, ShuttleAI, Deepseek, Qwen, and more
+![Chat mock flow](docs/screenshots/chat-mock-flow.png)
 
-- 🔧 **[Code Interpreter API](https://www.librechat.ai/docs/features/code_interpreter)**: 
-  - Secure, Sandboxed Execution in Python, Node.js (JS/TS), Go, C/C++, Java, PHP, Rust, and Fortran
-  - Seamless File Handling: Upload, process, and download files directly
-  - No Privacy Concerns: Fully isolated and secure execution
+### Analytics page
 
-- 🔦 **Agents & Tools Integration**:  
-  - **[LibreChat Agents](https://www.librechat.ai/docs/features/agents)**:
-    - No-Code Custom Assistants: Build specialized, AI-driven helpers
-    - Agent Marketplace: Discover and deploy community-built agents
-    - Collaborative Sharing: Share agents with specific users and groups
-    - Flexible & Extensible: Use MCP Servers, tools, file search, code execution, and more
-    - Compatible with Custom Endpoints, OpenAI, Azure, Anthropic, AWS Bedrock, Google, Vertex AI, Responses API, and more
-    - [Model Context Protocol (MCP) Support](https://modelcontextprotocol.io/clients#librechat) for Tools
+![Analytics page](docs/screenshots/analytics-page.png)
 
-- 🔍 **Web Search**:  
-  - Search the internet and retrieve relevant information to enhance your AI context
-  - Combines search providers, content scrapers, and result rerankers for optimal results
-  - **Customizable Jina Reranking**: Configure custom Jina API URLs for reranking services
-  - **[Learn More →](https://www.librechat.ai/docs/features/web_search)**
+## Technical solution
 
-- 🪄 **Generative UI with Code Artifacts**:  
-  - [Code Artifacts](https://youtu.be/GfTj7O4gmd0?si=WJbdnemZpJzBrJo3) allow creation of React, HTML, and Mermaid diagrams directly in chat
+### 1. Data model
 
-- 🎨 **Image Generation & Editing**
-  - Text-to-image and image-to-image with [GPT-Image-1](https://www.librechat.ai/docs/features/image_gen#1--openai-image-tools-recommended)
-  - Text-to-image with [DALL-E (3/2)](https://www.librechat.ai/docs/features/image_gen#2--dalle-legacy), [Stable Diffusion](https://www.librechat.ai/docs/features/image_gen#3--stable-diffusion-local), [Flux](https://www.librechat.ai/docs/features/image_gen#4--flux), or any [MCP server](https://www.librechat.ai/docs/features/image_gen#5--model-context-protocol-mcp)
-  - Produce stunning visuals from prompts or refine existing images with a single instruction
+Added a dedicated `Interaction` entity for analytics storage.
 
-- 💾 **Presets & Context Management**:  
-  - Create, Save, & Share Custom Presets  
-  - Switch between AI Endpoints and Presets mid-chat
-  - Edit, Resubmit, and Continue Messages with Conversation branching  
-  - Create and share prompts with specific users and groups
-  - [Fork Messages & Conversations](https://www.librechat.ai/docs/features/fork) for Advanced Context control
+Stored fields:
 
-- 💬 **Multimodal & File Interactions**:  
-  - Upload and analyze images with Claude 3, GPT-4.5, GPT-4o, o1, Llama-Vision, and Gemini 📸  
-  - Chat with Files using Custom Endpoints, OpenAI, Azure, Anthropic, AWS Bedrock, & Google 🗃️
+- `user`
+- `userMessageId`
+- `assistantMessageId`
+- `conversationId`
+- `endpoint`
+- `model`
+- `userMessage`
+- `assistantMessage`
+- `status`
+- `latencyMs`
+- `createdAt`
 
-- 🌎 **Multilingual UI**:
-  - English, 中文 (简体), 中文 (繁體), العربية, Deutsch, Español, Français, Italiano
-  - Polski, Português (PT), Português (BR), Русский, 日本語, Svenska, 한국어, Tiếng Việt
-  - Türkçe, Nederlands, עברית, Català, Čeština, Dansk, Eesti, فارسی
-  - Suomi, Magyar, Հայերեն, Bahasa Indonesia, ქართული, Latviešu, ไทย, ئۇيغۇرچە
+Key implementation details:
 
-- 🧠 **Reasoning UI**:  
-  - Dynamic Reasoning UI for Chain-of-Thought/Reasoning AI models like DeepSeek-R1
+- TypeScript-only data layer in `packages/data-schemas`
+- user-scoped reads and writes
+- indexes on `user + createdAt` and `user + model`
+- index on `conversationId`
+- idempotency by unique `assistantMessageId`
+- cursor pagination for recent logs
+- aggregation-based summary
 
-- 🎨 **Customizable Interface**:  
-  - Customizable Dropdown & Interface that adapts to both power users and newcomers
+Relevant files:
 
-- 🌊 **[Resumable Streams](https://www.librechat.ai/docs/features/resumable_streams)**:  
-  - Never lose a response: AI responses automatically reconnect and resume if your connection drops
-  - Multi-Tab & Multi-Device Sync: Open the same chat in multiple tabs or pick up on another device
-  - Production-Ready: Works from single-server setups to horizontally scaled deployments with Redis
+- `packages/data-schemas/src/types/interaction.ts`
+- `packages/data-schemas/src/schema/interaction.ts`
+- `packages/data-schemas/src/models/interaction.ts`
+- `packages/data-schemas/src/methods/interaction.ts`
 
-- 🗣️ **Speech & Audio**:  
-  - Chat hands-free with Speech-to-Text and Text-to-Speech  
-  - Automatically send and play Audio  
-  - Supports OpenAI, Azure OpenAI, and Elevenlabs
+### 2. Backend API
 
-- 📥 **Import & Export Conversations**:  
-  - Import Conversations from LibreChat, ChatGPT, Chatbot UI  
-  - Export conversations as screenshots, markdown, text, json
+Added analytics service and handlers in `packages/api`:
 
-- 🔍 **Search & Discovery**:  
-  - Search all messages/conversations
+- `GET /api/analytics/summary`
+- `GET /api/analytics/interactions`
+- `POST /api/analytics/mock-interaction`
 
-- 👥 **Multi-User & Secure Access**:
-  - Multi-User, Secure Authentication with OAuth2, LDAP, & Email Login Support
-  - Built-in Moderation, and Token spend tools
+Implementation rules followed:
 
-- ⚙️ **Configuration & Deployment**:  
-  - Configure Proxy, Reverse Proxy, Docker, & many Deployment options  
-  - Use completely local or deploy on the cloud
+- handlers are written in TypeScript
+- handlers use dependency injection
+- handlers do not import Mongoose models directly
+- legacy JS backend only contains thin Express route wiring
 
-- 📖 **Open-Source & Community**:  
-  - Completely Open-Source & Built in Public  
-  - Community-driven development, support, and feedback
+Relevant files:
 
-[For a thorough review of our features, see our docs here](https://docs.librechat.ai/) 📚
+- `packages/api/src/analytics/service.ts`
+- `packages/api/src/analytics/handlers.ts`
+- `packages/api/src/analytics/index.ts`
+- `api/server/routes/analytics.js`
 
-## 🪶 All-In-One AI Conversations with LibreChat
+### 3. Existing flow integration
 
-LibreChat is a self-hosted AI chat platform that unifies all major AI providers in a single, privacy-focused interface.
+Analytics is implemented as a passive recorder.
 
-Beyond chat, LibreChat provides AI Agents, Model Context Protocol (MCP) support, Artifacts, Code Interpreter, custom actions, conversation search, and enterprise-ready multi-user authentication.
+The normal LibreChat provider flow is not replaced. OpenAI, Agents, Assistants, Anthropic, and other providers remain responsible for generating responses through the existing code paths.
 
-Open source, actively developed, and built for anyone who values control over their AI infrastructure.
+Integration seam:
 
----
+- assistant replies are recorded only after the existing message persistence path succeeds;
+- the JS route layer does not contain analytics business logic;
+- a small server-side orchestration wrapper bridges the legacy Express route to the typed analytics service;
+- the TypeScript analytics service owns normalization, success-only rules, and idempotent write payload construction.
+- recorder hooks are attached to existing message persistence points, not provider request construction.
 
-## 🌐 Resources
+Current behavior:
 
-**GitHub Repo:**
-  - **RAG API:** [github.com/danny-avila/rag_api](https://github.com/danny-avila/rag_api)
-  - **Website:** [github.com/LibreChat-AI/librechat.ai](https://github.com/LibreChat-AI/librechat.ai)
+- the user sends a normal chat message;
+- LibreChat handles the provider request normally;
+- when a successful assistant message is persisted through `POST /api/messages/:conversationId`, analytics records the user/assistant exchange;
+- if the provider fails because of key, quota, model, network, or any other provider error, no successful interaction is recorded;
+- if analytics recording fails, the chat response is not broken and the analytics error is logged.
 
-**Other:**
-  - **Website:** [librechat.ai](https://librechat.ai)
-  - **Documentation:** [librechat.ai/docs](https://librechat.ai/docs)
-  - **Blog:** [librechat.ai/blog](https://librechat.ai/blog)
+This keeps analytics decoupled from provider request contracts and avoids requirements such as `agent_id` unless the original flow itself requires them.
 
----
+Relevant files:
 
-## 📝 Changelog
+- `api/server/routes/messages.js`
+- `api/server/services/Analytics/recordSavedInteraction.js`
+- `api/app/clients/BaseClient.js`
+- `api/server/controllers/agents/request.js`
+- `api/server/services/Threads/manage.js`
+- `packages/api/src/analytics/service.ts`
 
-Keep up with the latest updates by visiting the releases page and notes:
-- [Releases](https://github.com/danny-avila/LibreChat/releases)
-- [Changelog](https://www.librechat.ai/changelog) 
+### 4. Frontend
 
-**⚠️ Please consult the [changelog](https://www.librechat.ai/changelog) for breaking changes before updating.**
+Added a new page:
 
----
+- `/analytics`
 
-## ⭐ Star History
+Page content:
 
-<p align="center">
-  <a href="https://star-history.com/#danny-avila/LibreChat&Date">
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=danny-avila/LibreChat&type=Date&theme=dark" onerror="this.src='https://api.star-history.com/svg?repos=danny-avila/LibreChat&type=Date'" />
-  </a>
-</p>
-<p align="center">
-  <a href="https://trendshift.io/repositories/4685" target="_blank" style="padding: 10px;">
-    <img src="https://trendshift.io/api/badge/repositories/4685" alt="danny-avila%2FLibreChat | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
-  </a>
-  <a href="https://runacap.com/ross-index/q1-24/" target="_blank" rel="noopener" style="margin-left: 20px;">
-    <img style="width: 260px; height: 56px" src="https://runacap.com/wp-content/uploads/2024/04/ROSS_badge_white_Q1_2024.svg" alt="ROSS Index - Fastest Growing Open-Source Startups in Q1 2024 | Runa Capital" width="260" height="56"/>
-  </a>
-</p>
+- total interactions
+- models used
+- latest activity
+- average request length
+- average response length
+- interactions by day chart
+- recent interactions table
+- loading and empty states
 
----
+Frontend integration details:
 
-## ✨ Contributions
+- TypeScript React page
+- React Query hooks use `dataService`, not direct `fetch`
+- route is integrated into existing client routing
+- analytics button added in chat UI for quick access
 
-Contributions, suggestions, bug reports and fixes are welcome!
+Relevant files:
 
-For new features, components, or extensions, please open an issue and discuss before sending a PR.
+- `client/src/routes/Analytics.tsx`
+- `client/src/routes/index.tsx`
+- `client/src/data-provider/Analytics/queries.ts`
+- `client/src/components/Chat/AnalyticsButton.tsx`
 
-If you'd like to help translate LibreChat into your language, we'd love your contribution! Improving our translations not only makes LibreChat more accessible to users around the world but also enhances the overall user experience. Please check out our [Translation Guide](https://www.librechat.ai/docs/translation).
+### 5. Shared contract
 
----
+Added typed frontend/backend contract in `packages/data-provider`.
 
-## 💖 This project exists in its current state thanks to all the people who contribute
+Main types:
 
-<a href="https://github.com/danny-avila/LibreChat/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=danny-avila/LibreChat" />
-</a>
+- `InteractionAnalyticsListParams`
+- `TInteractionLog`
+- `TInteractionAnalyticsSummary`
+- `TInteractionLogsResponse`
+- `TCreateMockInteractionRequest`
+- `TCreateMockInteractionResponse`
 
----
+Relevant files:
 
-## 🎉 Special Thanks
+- `packages/data-provider/src/types/queries.ts`
+- `packages/data-provider/src/api-endpoints.ts`
+- `packages/data-provider/src/data-service.ts`
+- `packages/data-provider/src/keys.ts`
 
-We thank [Locize](https://locize.com) for their translation management tools that support multiple languages in LibreChat.
+## Current analytics behavior
 
-<p align="center">
-  <a href="https://locize.com" target="_blank" rel="noopener noreferrer">
-    <img src="https://github.com/user-attachments/assets/d6b70894-6064-475e-bb65-92a9e23e0077" alt="Locize Logo" height="50">
-  </a>
-</p>
+The analytics page currently reads from the `Interaction` collection.
+
+Summary currently includes:
+
+- total interactions
+- distinct model count
+- latest activity time
+- average request length
+- average response length
+
+Recent logs include:
+
+- interaction day
+- user message
+- assistant response
+- model
+
+The chart is currently based on recorded interaction volume by day.
+
+## Mock/demo mode
+
+The task explicitly allows replacing real AI interaction with a mock.
+
+This fork keeps mock support as a separate analytics endpoint:
+
+- `POST /api/analytics/mock-interaction`
+
+The mock endpoint creates demo `Interaction` records directly. It does not fake chat responses and does not hijack provider-specific agents/assistants/OpenAI flows.
+
+This keeps the feature:
+
+- easy to verify locally
+- stable in tests
+- independent from external provider credentials
+- safe to use without changing normal chat behavior
+
+## What is counted
+
+Counted:
+
+- successful completed interactions;
+- a user message exists;
+- an assistant message exists;
+- assistant text/content exists;
+- conversation id exists where available.
+
+Not counted in this MVP:
+
+- missing API key errors;
+- quota or billing errors;
+- invalid model errors;
+- provider/network failures;
+- cancelled or incomplete responses.
+
+Production can later add a separate `failed_attempt` status for failed provider calls.
+
+## Tests and verification
+
+Implemented targeted tests for:
+
+- data layer methods
+- analytics API handlers
+- passive message-save interaction recording
+- analytics error isolation in chat message saving
+- frontend analytics page
+
+Verified locally:
+
+- analytics API handler tests pass
+- frontend analytics page test passes
+- passive message-save interaction tests pass for the route-level mocked cases
+- `build:data-provider`
+- `build:data-schemas`
+- `build:api`
+
+Notes:
+
+- `mongodb-memory-server` can fail on this Windows environment before test assertions with a local `Mongod internal error (fassert() failure)`. When that happens, data-layer tests are blocked by local MongoMemory startup, not by interaction assertions.
+- `build:client` requires the `librechat-data-provider/react-query` subpath bundle to exist; this fork includes the missing CJS build output so workspace builds resolve consistently.
+
+## Local run
+
+Minimal local setup used for this feature:
+
+```env
+HOST=localhost
+PORT=3080
+MONGO_URI=mongodb://admin:admin@localhost:27017/LibreChat?authSource=admin
+JWT_SECRET=local-secret
+JWT_REFRESH_SECRET=local-refresh-secret
+ALLOW_REGISTRATION=true
+```
+
+MongoDB example:
+
+```bash
+docker run --name librechat-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -d mongo:7
+```
+
+Build and run:
+
+```bash
+npm install
+npm run build:data-provider
+npm run build:data-schemas
+npm run build:api
+npm run build:client-package
+npm run build:client
+npm run backend:dev
+cd client && npm run dev
+```
+
+Open:
+
+- frontend: `http://localhost:3090`
+- analytics: `http://localhost:3090/analytics`
+
+## Limitations
+
+Current state is MVP-level analytics integration.
+
+Known limitations:
+
+- analytics records success interactions after message persistence; failed provider attempts are not yet tracked
+- analytics metrics are intentionally compact
+- chart is simple by design
+- interaction recording is attached to several existing persistence points; a production event/hook in the message repository would be cleaner
+
+## Production path
+
+To move this solution toward production:
+
+1. Keep provider flows untouched and move post-persistence recording behind one shared message repository event/hook.
+2. Reuse the existing passive recorder seam for any additional persistence points instead of adding provider-specific request hooks.
+3. Extend summary aggregation with metrics such as latency averages, error rate, token usage, and richer per-model breakdowns.
+4. Add stronger observability and failure handling around interaction recording.
+5. Add `failed_attempt` analytics as a separate status without mixing it with successful interactions.
+
+## Additional docs
+
+Detailed Russian-language project notes are included in:
+
+- `ANALYTICS_TECHNICAL_OVERVIEW_RU.md`
+- `INTERACTION_ANALYTICS_SOLUTION_RU.md`
+- `MANUAL_TESTING_ANALYTICS_RU.md`
+- `ANALYTICS_REVISION_WSL_RU.md`

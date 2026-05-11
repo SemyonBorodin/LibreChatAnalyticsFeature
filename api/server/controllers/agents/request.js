@@ -11,6 +11,7 @@ const {
 } = require('@librechat/api');
 const { disposeClient, clientRegistry, requestDataMap } = require('~/server/cleanup');
 const { handleAbortError } = require('~/server/middleware');
+const { recordSavedInteraction } = require('~/server/services/Analytics/recordSavedInteraction');
 const { logViolation } = require('~/cache');
 const { saveMessage, getConvo } = require('~/models');
 
@@ -337,11 +338,20 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
         // This prevents race conditions where the client sends a follow-up message
         // before the response is saved to the database, causing orphaned parentMessageIds.
         if (client.savedMessageIds && !client.savedMessageIds.has(messageId)) {
-          await saveMessage(
+          const savedResponseMessage = await saveMessage(
             reqCtx,
             { ...response, user: userId, unfinished: wasAbortedBeforeComplete },
             { context: 'api/server/controllers/agents/request.js - resumable response end' },
           );
+
+          await recordSavedInteraction({
+            userId,
+            savedMessage: savedResponseMessage,
+            fallbackMessage: response,
+            fallbackParentMessage: userMessage,
+            conversationId,
+            source: 'agents-resumable-response',
+          });
         }
 
         // Check if our job was replaced by a new request before emitting
@@ -717,7 +727,7 @@ const _LegacyAgentController = async (req, res, next, initializeClient, addTitle
 
       // Save the message if needed
       if (client.savedMessageIds && !client.savedMessageIds.has(messageId)) {
-        await saveMessage(
+        const savedResponseMessage = await saveMessage(
           {
             userId: req?.user?.id,
             isTemporary: req?.body?.isTemporary,
@@ -726,6 +736,15 @@ const _LegacyAgentController = async (req, res, next, initializeClient, addTitle
           { ...finalResponse, user: userId },
           { context: 'api/server/controllers/agents/request.js - response end' },
         );
+
+        await recordSavedInteraction({
+          userId,
+          savedMessage: savedResponseMessage,
+          fallbackMessage: finalResponse,
+          fallbackParentMessage: userMessage,
+          conversationId,
+          source: 'agents-legacy-response',
+        });
       }
     }
     // Edge case: sendMessage completed but abort happened during sendCompletion

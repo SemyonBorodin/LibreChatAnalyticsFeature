@@ -10,6 +10,7 @@ const {
 } = require('librechat-data-provider');
 const { recordMessage, getMessages, spendTokens, saveConvo } = require('~/models');
 const { retrieveAndProcessFile } = require('~/server/services/Files/process');
+const { recordSavedInteraction } = require('~/server/services/Analytics/recordSavedInteraction');
 
 /**
  * Initializes a new thread or adds messages to an existing thread.
@@ -165,6 +166,14 @@ async function saveAssistantMessage(req, params) {
     },
     { context: 'api/server/services/Threads/manage.js #saveAssistantMessage' },
   );
+
+  await recordSavedInteraction({
+    userId: req?.user?.id,
+    savedMessage: typeof message?.toObject === 'function' ? message.toObject() : message,
+    fallbackMessage: params,
+    conversationId: params.conversationId,
+    source: 'assistants-save-message',
+  });
 
   return message;
 }

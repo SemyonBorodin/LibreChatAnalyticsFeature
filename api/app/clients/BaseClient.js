@@ -26,6 +26,7 @@ const {
   getEndpointFileConfig,
 } = require('librechat-data-provider');
 const { getStrategyFunctions } = require('~/server/services/Files/strategies');
+const { recordSavedInteraction } = require('~/server/services/Analytics/recordSavedInteraction');
 const { logViolation } = require('~/cache');
 const TextStream = require('./TextStream');
 const db = require('~/models');
@@ -804,6 +805,14 @@ class BaseClient {
     );
 
     if (this.skipSaveConvo) {
+      await recordSavedInteraction({
+        userId: options?.req?.user?.id ?? user,
+        savedMessage,
+        fallbackMessage: message,
+        conversationId: message.conversationId,
+        source: 'base-client-save-message',
+      });
+
       return { message: savedMessage };
     }
 
@@ -865,6 +874,14 @@ class BaseClient {
       context: 'api/app/clients/BaseClient.js - saveMessageToDatabase #saveConvo',
       unsetFields,
       createdAtOnInsert: shouldSetCreatedAtOnInsert ? validCreatedAtOnInsert : undefined,
+    });
+
+    await recordSavedInteraction({
+      userId: options?.req?.user?.id ?? user,
+      savedMessage,
+      fallbackMessage: message,
+      conversationId: message.conversationId,
+      source: 'base-client-save-message',
     });
 
     return { message: savedMessage, conversation };

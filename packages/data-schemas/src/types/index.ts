@@ -10,6 +10,7 @@ export * from './balance';
 export * from './banner';
 export * from './transaction';
 export * from './message';
+export * from './interaction';
 export * from './agent';
 export * from './agentApiKey';
 export * from './agentCategory';

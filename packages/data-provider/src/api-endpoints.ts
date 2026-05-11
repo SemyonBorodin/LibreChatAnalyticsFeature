@@ -441,6 +441,13 @@ export const userTerms = () => `${BASE_URL}/api/user/terms`;
 export const acceptUserTerms = () => `${BASE_URL}/api/user/terms/accept`;
 export const banner = () => `${BASE_URL}/api/banner`;
 
+const interactionAnalyticsRoot = `${BASE_URL}/api/analytics`;
+export const interactionAnalyticsSummary = () => `${interactionAnalyticsRoot}/summary`;
+export const interactionAnalyticsInteractions = (params: q.InteractionAnalyticsListParams = {}) =>
+  `${interactionAnalyticsRoot}/interactions${buildQuery(params)}`;
+export const interactionAnalyticsMockInteraction = () =>
+  `${interactionAnalyticsRoot}/mock-interaction`;
+
 // Message Feedback
 export const feedback = (conversationId: string, messageId: string) =>
   `${BASE_URL}/api/messages/${conversationId}/${messageId}/feedback`;

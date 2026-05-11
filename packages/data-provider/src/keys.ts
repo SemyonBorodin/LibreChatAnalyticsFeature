@@ -52,6 +52,9 @@ export enum QueryKeys {
   health = 'health',
   userTerms = 'userTerms',
   banner = 'banner',
+  interactionAnalyticsSummary = 'interactionAnalyticsSummary',
+  interactionAnalyticsInteractions = 'interactionAnalyticsInteractions',
+  interactionLogs = 'interactionLogs',
   /* Memories */
   memories = 'memories',
   principalSearch = 'principalSearch',

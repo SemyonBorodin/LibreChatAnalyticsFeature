@@ -53,6 +53,58 @@ export type MessagesListResponse = {
   nextCursor: string | null;
 };
 
+export type InteractionAnalyticsListParams = {
+  cursor?: string | null;
+  pageSize?: number;
+  model?: string;
+};
+
+export type TInteractionLog = {
+  _id: string;
+  user: string;
+  userMessageId?: string | null;
+  assistantMessageId?: string | null;
+  userMessage: string;
+  assistantMessage: string;
+  status: 'success';
+  model?: string | null;
+  endpoint?: string | null;
+  conversationId?: string | null;
+  latencyMs?: number | null;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TInteractionAnalyticsSummaryBucket = {
+  model: string | null;
+  count: number;
+  firstCreatedAt: string | null;
+  lastCreatedAt: string | null;
+};
+
+export type TInteractionAnalyticsSummary = {
+  totalInteractions: number;
+  uniqueModels: number;
+  averageUserMessageLength: number;
+  averageAssistantMessageLength: number;
+  firstCreatedAt: string | null;
+  lastCreatedAt: string | null;
+  byModel: TInteractionAnalyticsSummaryBucket[];
+};
+
+export type TInteractionLogsResponse = {
+  interactions: TInteractionLog[];
+  nextCursor: string | null;
+};
+
+export type TCreateMockInteractionRequest = {
+  userMessage: string;
+  model?: string;
+};
+
+export type TCreateMockInteractionResponse = TInteractionLog;
+
 /* Shared Links */
 export type SharedMessagesResponse = Omit<s.TSharedLink, 'messages'> & {
   messages: s.TMessage[];
