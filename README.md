@@ -205,6 +205,19 @@ This keeps the feature:
 - independent from external provider credentials
 - safe to use without changing normal chat behavior
 
+## Real provider keys and fallback behavior
+
+Normal chat requests still use LibreChat's existing provider configuration.
+
+For example, if `OPENAI_API_KEY` is present in `.env`, LibreChat may use it server-side even when the user does not manually paste a key in the UI. In that case:
+
+- a successful provider response is recorded as a real interaction;
+- `429 quota exceeded` means the provider key was found, but the account/project has no available quota;
+- missing key, invalid key, quota, billing, model, or network errors are not recorded as successful interactions;
+- analytics mock mode does not automatically replace failed provider calls.
+
+The mock endpoint is intentionally explicit. It is for local/demo analytics data only, not a fallback that hides provider setup or billing problems.
+
 ## What is counted
 
 Counted:
